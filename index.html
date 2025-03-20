@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compra de Colchones - Quick</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="video-background">
+        <video autoplay muted loop id="bg-video" aria-label="Background video">
+          <source src="bg_video.mp4" type="video/mp4" poster="poster.jpg">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    <main>
+        <header>
+            <div class="header-images">
+                <img src="Quick.png" alt="Left Header Image" class="header-image left-image">
+                <img src="emma.webp" alt="Right Header Image" class="header-image right-image">
+            </div>
+            <h1>Compra de Colchones - Quick</h1>
+            <p class="subtitle">Adquiere tu colchón a precios exclusivos para empleados</p>
+        </header>
+        <section>
+            <div class="sec_precios-container">
+                <div class="sec_precios">
+                    <h2 class="precios2">Lista de Colchones Disponibles</h2>
+                    <table class="precios">
+                        <thead>
+                            <tr>
+                                <th>Tamaño</th>
+                                <th>Precio Quick</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Sencillo</td><td>COP 399,900.00</td></tr>
+                            <tr><td>Semidoble</td><td>COP 434,351.35</td></tr>
+                            <tr><td>Doble</td><td>COP 505,048.53</td></tr>
+                            <tr><td>Queen</td><td>COP 546,016.92</td></tr>
+                            <tr><td>King</td><td>COP 583,685.13</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <img src="colchon.jpg" alt="Image next to sec_precios" class="sec_precios-image">
+            </div>
+        </section>
+        
+        <section>
+            <h2>Formulario de Compra</h2>
+            <form id="compraForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nombre">Nombres:</label>
+                        <input type="text" id="nombre" name="nombre" class="entry" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellido">Apellidos:</label>
+                        <input type="text" id="apellido" name="apellido" class="entry" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cedula">Cédula:</label>
+                        <input type="text" id="cedula" name="cedula" class="entry" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="correo">Correo Electrónico:</label>
+                        <input type="email" id="correo" name="correo" class="entry" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="antiguedad">Antigüedad en Quick (años):</label>
+                        <input type="number" id="antiguedad" name="antiguedad" class="entry" min="0" max="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="colchon">Selecciona el colchón:</label>
+                        <select id="colchon" name="colchon" class="entry" required>
+                            <option value="Sencillo">Sencillo - COP 399,900.00</option>
+                            <option value="Semidoble">Semidoble - COP 434,351.35</option>
+                            <option value="Doble">Doble - COP 505,048.53</option>
+                            <option value="Queen">Queen - COP 546,016.92</option>
+                            <option value="King">King - COP 583,685.13</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="spacer"></div>
+                <label for="formato_pago">Sube el formato de pago por descuento de nómina:</label>
+                <input type="file" id="formato_pago" name="formato_pago" accept=".pdf" class="entry" required>
+                <div class="spacer2"></div>
+                <button type="submit">Enviar Pedido</button>
+            </form>
+        </section>
+        <section>
+            <h2>Formato de Descuento de Nómina</h2>
+            <p>Descarga y diligencia el siguiente formato para autorizar el descuento de nómina:</p>
+            <a href="Autorización de Descuento Quick.docx" download>Descargar Formato</a>
+        </section>
+        <section>
+            <h2>Consulta Precios Directamente en Emma Sleep</h2>
+            <p>Si deseas conocer los precios en la tienda oficial, visita el siguiente enlace:</p>
+            <a href="https://www.emma-colchon.co/co-colchones/" target="_blank">Ver Precios en Emma Sleep</a>
+        </section>
+        <footer>
+            <p class="subtitle">&copy; 2025 Quick - Todos los derechos reservados</p>
+        </footer>
+    </main>
+    <script>
+        document.getElementById("compraForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            var form = document.getElementById("compraForm");
+            var formData = new FormData(form);
+    
+            var file = formData.get("formato_pago");
+            var fileName = file.name; // Obtener el nombre original del archivo
+    
+            var reader = new FileReader();
+    
+            reader.onloadend = async function() {
+                var fileContent = reader.result.split(",")[1]; // Extrae solo el contenido en base64
+    
+                var jsonData = {
+                    nombre: formData.get("nombre"),
+                    apellido: formData.get("apellido"),
+                    cedula: formData.get("cedula"),
+                    correo: formData.get("correo"),
+                    antiguedad: formData.get("antiguedad"),
+                    colchon: formData.get("colchon"),
+                    formato_pago: fileContent, // Se envía el archivo en base64
+                    nombre_archivo: fileName // Se envía el nombre original del archivo
+                };
+    
+                const scriptURL = "https://script.google.com/macros/s/AKfycbxb_lhnVh2RNrqWuNPdsJMiwvm7VfPBOoYA92tjAMVDa0VdZ8CfETnx32ULJvNJ4ogv3g/exec"; // URL del script de Google Apps Script
+    
+                fetch(scriptURL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(response => response.text())
+                .then(result => {
+                    document.getElementById("mensaje").innerText = "Datos guardados y archivo enviado por correo correctamente.";
+                })
+                .catch(error => {
+                    document.getElementById("mensaje").innerText = "Error al enviar los datos y el archivo.";
+                    console.error("Error:", error);
+                });
+    
+                form.reset();
+            };
+    
+            reader.readAsDataURL(file);
+        });
+    </script>
+
+</body>
+</html>
