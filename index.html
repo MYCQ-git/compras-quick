@@ -20,7 +20,7 @@
                 <img src="Quick.png" alt="Left Header Image" class="header-image left-image">
                 <img src="emma.webp" alt="Right Header Image" class="header-image right-image">
             </div>
-            <h1>Compra de Colchones - Quick test</h1>
+            <h1>Compra de Colchones - Quick</h1>
             <p class="subtitle">Adquiere tu colchón a precios exclusivos para empleados</p>
         </header>
         <section>
@@ -88,6 +88,7 @@
                 <div class="spacer2"></div>
                 <button type="submit">Enviar Pedido</button>
             </form>
+            <p id="mensaje" style="color: green; font-weight: bold;"></p>
         </section>
         <section>
             <h2>Formato de Descuento de Nómina</h2>
@@ -105,51 +106,54 @@
     </main>
     <script>
         document.getElementById("compraForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
-            var form = document.getElementById("compraForm");
-            var formData = new FormData(form);
-    
-            var file = formData.get("formato_pago");
-            var fileName = file.name; // Obtener el nombre original del archivo
-    
-            var reader = new FileReader();
-    
-            reader.onloadend = async function() {
-                var fileContent = reader.result.split(",")[1]; // Extrae solo el contenido en base64
-    
-                var jsonData = {
-                    nombre: formData.get("nombre"),
-                    apellido: formData.get("apellido"),
-                    cedula: formData.get("cedula"),
-                    correo: formData.get("correo"),
-                    antiguedad: formData.get("antiguedad"),
-                    colchon: formData.get("colchon"),
-                    formato_pago: fileContent, // Se envía el archivo en base64
-                    nombre_archivo: fileName // Se envía el nombre original del archivo
-                };
-    
-                const scriptURL = "https://script.google.com/macros/s/AKfycbxb_lhnVh2RNrqWuNPdsJMiwvm7VfPBOoYA92tjAMVDa0VdZ8CfETnx32ULJvNJ4ogv3g/exec"; // URL del script de Google Apps Script
-    
-                fetch(scriptURL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(jsonData)
-                })
-                .then(response => response.text())
-                .then(result => {
-                    document.getElementById("mensaje").innerText = "Datos guardados y archivo enviado por correo correctamente.";
-                })
-                .catch(error => {
-                    document.getElementById("mensaje").innerText = "Error al enviar los datos y el archivo.";
-                    console.error("Error:", error);
-                });
-    
-                form.reset();
+          event.preventDefault();
+          const form = document.getElementById("compraForm");
+          const formData = new FormData(form);
+      
+          const file = formData.get("formato_pago");
+          const fileName = file.name;
+          const fileType = file.type;
+      
+          const reader = new FileReader();
+      
+          reader.onloadend = async function() {
+            const fileContent = reader.result.split(",")[1]; // Extrae base64
+      
+            const jsonData = {
+              nombre: formData.get("nombre"),
+              apellido: formData.get("apellido"),
+              cedula: formData.get("cedula"),
+              correo: formData.get("correo"),
+              antiguedad: formData.get("antiguedad"),
+              colchon: formData.get("colchon"),
+              formato_pago: fileContent,
+              nombre_archivo: fileName,
+              tipo_mime: fileType
             };
-    
-            reader.readAsDataURL(file);
+      
+            const scriptURL = "https://script.google.com/a/macros/smartquick.com.co/s/AKfycbyligY-LA-MOatgLDuL3Cq3dH-pdRwhnUv_RSb_c4JD3wtgxReTy5z2miNdVFz6HEflPg/exec";
+      
+            fetch(scriptURL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(jsonData)
+            })
+            .then(response => response.text())
+            .then(result => {
+              console.log("Respuesta del servidor:", result);
+              document.getElementById("mensaje").innerText = "✔ " + JSON.parse(result).message;
+              form.reset();
+            })
+            .catch(error => {
+              console.error("Error:", error);
+              document.getElementById("mensaje").innerText = "❌ Error al enviar los datos.";
+            });
+          };
+      
+          reader.readAsDataURL(file);
         });
-    </script>
+      </script>
+      
 
 </body>
 </html>
