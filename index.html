@@ -104,55 +104,56 @@
             <p class="subtitle">&copy; 2025 Quick - Todos los derechos reservados</p>
         </footer>
     </main>
-    <script>
-        document.getElementById("compraForm").addEventListener("submit", async function(event) {
-          event.preventDefault();
-          const form = document.getElementById("compraForm");
-          const formData = new FormData(form);
+<script>
+  document.getElementById("compraForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const form = document.getElementById("compraForm");
+    const formData = new FormData(form);
+    
+    const file = formData.get("formato_pago");
+    const fileName = file.name;
+    const fileType = file.type;
+    
+    const reader = new FileReader();
+    
+    reader.onloadend = async function() {
+      const fileContent = reader.result.split(",")[1];
       
-          const file = formData.get("formato_pago");
-          const fileName = file.name;
-          const fileType = file.type;
+      const jsonData = {
+        nombre: formData.get("nombre"),
+        apellido: formData.get("apellido"),
+        cedula: formData.get("cedula"),
+        correo: formData.get("correo"),
+        antiguedad: formData.get("antiguedad"),
+        colchon: formData.get("colchon"),
+        formato_pago: fileContent,
+        nombre_archivo: fileName,
+        tipo_mime: fileType
+      };
       
-          const reader = new FileReader();
+      const scriptURL = "https://script.google.com/a/macros/smartquick.com.co/s/AKfycbyligY-LA-MOatgLDuL3Cq3dH-pdRwhnUv_RSb_c4JD3wtgxReTy5z2miNdVFz6HEflPg/exec";
       
-          reader.onloadend = async function() {
-            const fileContent = reader.result.split(",")[1]; // Extrae base64
-      
-            const jsonData = {
-              nombre: formData.get("nombre"),
-              apellido: formData.get("apellido"),
-              cedula: formData.get("cedula"),
-              correo: formData.get("correo"),
-              antiguedad: formData.get("antiguedad"),
-              colchon: formData.get("colchon"),
-              formato_pago: fileContent,
-              nombre_archivo: fileName,
-              tipo_mime: fileType
-            };
-      
-            const scriptURL = "https://script.google.com/macros/s/AKfycbxOsWbHOVZDQubMl7hQTF1zBmu0rLE3GDOxVU1mlPlvTmiol7i22_WqwXmhgnsthDfL1g/exec";
-      
-            fetch(scriptURL, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(jsonData)
-            })
-            .then(response => response.text())
-            .then(result => {
-              console.log("Respuesta del servidor:", result);
-              document.getElementById("mensaje").innerText = "✔ " + JSON.parse(result).message;
-              form.reset();
-            })
-            .catch(error => {
-              console.error("Error:", error);
-              document.getElementById("mensaje").innerText = "❌ Error al enviar los datos.";
-            });
-          };
-      
-          reader.readAsDataURL(file);
-        });
-      </script>
+      fetch(scriptURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(jsonData),
+        redirect: "follow"
+      })
+      .then(response => response.text())
+      .then(result => {
+        console.log("Respuesta del servidor:", result);
+        document.getElementById("mensaje").innerText = "✔ " + JSON.parse(result).message;
+        form.reset();
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        document.getElementById("mensaje").innerText = "❌ Error al enviar los datos.";
+      });
+    };
+    
+    reader.readAsDataURL(file);
+  });
+</script>
       
 
 </body>
