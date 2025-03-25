@@ -82,12 +82,11 @@
                     </div>
                 </div>
                 <div class="spacer"></div>
-                <label for="formato_pago">Sube el formato de pago por descuento de nómina:</label>
-                <input type="file" id="formato_pago" name="formato_pago" accept=".pdf" class="entry" required>
+                <p>Nota: Para completar tu pedido, debes enviar el formato de pago por descuento de nómina al departamento de Recursos Humanos.</p>
                 <div class="spacer2"></div>
                 <button type="submit">Enviar Pedido</button>
             </form>
-            <p id="mensaje" style="color: green; font-weight: bold;"></p>
+            <p id="mensaje" style="color: green; font-weight: bold; display: none;"></p>
         </section>
         <section>
             <h2>Formato de Descuento de Nómina</h2>
@@ -103,96 +102,68 @@
             <p class="subtitle">&copy; 2025 Quick - Todos los derechos reservados</p>
         </footer>
     </main>
-
+   
     <script>
         document.getElementById('compraForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const form = e.target;
-            const formData = new FormData(form);
-            const submitButton = form.querySelector('button[type="submit"]');
-            const mensaje = document.getElementById('mensaje');
+            // Get form data
+            const formData = {
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                cedula: document.getElementById('cedula').value,
+                correo: document.getElementById('correo').value,
+                antiguedad: document.getElementById('antiguedad').value,
+                colchon: document.getElementById('colchon').value,
+                timestamp: new Date().toLocaleString()
+            };
             
-            // Disable the submit button to prevent multiple submissions
+            // Show loading state
+            const submitButton = document.querySelector('#compraForm button[type="submit"]');
             submitButton.disabled = true;
             submitButton.textContent = 'Enviando...';
             
-            // Convert FormData to a plain object
-            const formObject = {};
-            formData.forEach((value, key) => {
-                // Skip the file input for now (handled separately)
-                if (key !== 'formato_pago') {
-                    formObject[key] = value;
-                }
-            });
+            // Replace with your Google Apps Script Web App URL
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbx3qrUkGWEwcjKdDIkkXqOsQ8GMnP1qmJnBnsJSwAPPAtoPKTtH1XgCMFgYU0h_nNs/exec';
             
-            // Get the file if present
-            const fileInput = document.getElementById('formato_pago');
-            let file = null;
-            if (fileInput.files.length > 0) {
-                file = fileInput.files[0];
-            }
-            
-            // Prepare the data to send
-            const dataToSend = {
-                formData: formObject,
-                fileName: file ? file.name : '',
-                fileType: file ? file.type : ''
-            };
-            
-            // Replace this URL with your Google Apps Script web app URL
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbxzo6yiJk4NMnmeFKWDfZSqrtRjb5y39R3Ow8yb0RCL4bG_3okLWHdjACp4wy-m6dH0/exec';
-            
-            // First send the form data
+            // Send data to Google Sheets
             fetch(scriptUrl, {
                 method: 'POST',
+                mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify(dataToSend)
+                body: new URLSearchParams(formData).toString()
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error en la red');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    mensaje.textContent = '¡Formulario enviado con éxito!';
-                    form.reset();
-                    
-                    // If there's a file, upload it separately
-                    if (file) {
-                        return uploadFile(file, data.fileId);
-                    }
-                } else {
-                    throw new Error(data.message || 'Error desconocido');
-                }
-            })
-            .then(fileUploadResult => {
-                if (fileUploadResult) {
-                    console.log('File uploaded successfully:', fileUploadResult);
-                }
+            .then(() => {
+                // Show success message
+                const mensaje = document.getElementById('mensaje');
+                mensaje.textContent = '¡Formulario enviado con éxito! Recibirás un correo de confirmación pronto.';
+                mensaje.style.display = 'block';
+                mensaje.style.color = 'green';
+                
+                // Reset form
+                document.getElementById('compraForm').reset();
             })
             .catch(error => {
-                console.error('Error:', error);
-                mensaje.textContent = 'Error al enviar el formulario: ' + error.message;
+                // Show error message
+                const mensaje = document.getElementById('mensaje');
+                mensaje.textContent = 'Hubo un error al enviar el formulario. Por favor inténtalo de nuevo.';
+                mensaje.style.display = 'block';
                 mensaje.style.color = 'red';
+                console.error('Error:', error);
             })
             .finally(() => {
+                // Reset button state
                 submitButton.disabled = false;
                 submitButton.textContent = 'Enviar Pedido';
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('mensaje').style.display = 'none';
+                }, 5000);
             });
         });
-        
-        function uploadFile(file, fileId) {
-            // This would need to be implemented if you want to handle file uploads
-            // For GitHub Pages, file uploads are more complex and might require
-            // a separate service or using the Google Drive API directly
-            console.log('File upload would happen here for file:', file.name);
-            return Promise.resolve({ success: true });
-        }
     </script>
 </body>
 </html>
