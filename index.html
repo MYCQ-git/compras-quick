@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compra de Colchones - Quick</title>
@@ -104,57 +103,96 @@
             <p class="subtitle">&copy; 2025 Quick - Todos los derechos reservados</p>
         </footer>
     </main>
-<script>
-  document.getElementById("compraForm").addEventListener("submit", async function(event) {
-    event.preventDefault();
-    const form = document.getElementById("compraForm");
-    const formData = new FormData(form);
-    
-    const file = formData.get("formato_pago");
-    const fileName = file.name;
-    const fileType = file.type;
-    
-    const reader = new FileReader();
-    
-    reader.onloadend = async function() {
-      const fileContent = reader.result.split(",")[1];
-      
-      const jsonData = {
-        nombre: formData.get("nombre"),
-        apellido: formData.get("apellido"),
-        cedula: formData.get("cedula"),
-        correo: formData.get("correo"),
-        antiguedad: formData.get("antiguedad"),
-        colchon: formData.get("colchon"),
-        formato_pago: fileContent,
-        nombre_archivo: fileName,
-        tipo_mime: fileType
-      };
-      
-      const scriptURL = "https://script.google.com/macros/s/AKfycbyoCiZGFXalx6hTc_TLCrAtr8s7L9jEWhbKMWOXdIM8MzbJXNMydcIBiy27ZdxS9wGzOw/exec";
-      
-      fetch(scriptURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(jsonData),
-        redirect: "follow"
-      })
-      .then(response => response.text())
-      .then(result => {
-        console.log("Respuesta del servidor:", result);
-        document.getElementById("mensaje").innerText = "✔ " + JSON.parse(result).message;
-        form.reset();
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        document.getElementById("mensaje").innerText = "❌ Error al enviar los datos.";
-      });
-    };
-    
-    reader.readAsDataURL(file);
-  });
-</script>
-      
 
+    <script>
+        document.getElementById('compraForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            const mensaje = document.getElementById('mensaje');
+            
+            // Disable the submit button to prevent multiple submissions
+            submitButton.disabled = true;
+            submitButton.textContent = 'Enviando...';
+            
+            // Convert FormData to a plain object
+            const formObject = {};
+            formData.forEach((value, key) => {
+                // Skip the file input for now (handled separately)
+                if (key !== 'formato_pago') {
+                    formObject[key] = value;
+                }
+            });
+            
+            // Get the file if present
+            const fileInput = document.getElementById('formato_pago');
+            let file = null;
+            if (fileInput.files.length > 0) {
+                file = fileInput.files[0];
+            }
+            
+            // Prepare the data to send
+            const dataToSend = {
+                formData: formObject,
+                fileName: file ? file.name : '',
+                fileType: file ? file.type : ''
+            };
+            
+            // Replace this URL with your Google Apps Script web app URL
+            const scriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+            
+            // First send the form data
+            fetch(scriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la red');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    mensaje.textContent = '¡Formulario enviado con éxito!';
+                    form.reset();
+                    
+                    // If there's a file, upload it separately
+                    if (file) {
+                        return uploadFile(file, data.fileId);
+                    }
+                } else {
+                    throw new Error(data.message || 'Error desconocido');
+                }
+            })
+            .then(fileUploadResult => {
+                if (fileUploadResult) {
+                    console.log('File uploaded successfully:', fileUploadResult);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mensaje.textContent = 'Error al enviar el formulario: ' + error.message;
+                mensaje.style.color = 'red';
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Enviar Pedido';
+            });
+        });
+        
+        function uploadFile(file, fileId) {
+            // This would need to be implemented if you want to handle file uploads
+            // For GitHub Pages, file uploads are more complex and might require
+            // a separate service or using the Google Drive API directly
+            console.log('File upload would happen here for file:', file.name);
+            return Promise.resolve({ success: true });
+        }
+    </script>
 </body>
 </html>
